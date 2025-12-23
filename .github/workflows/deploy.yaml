@@ -1,0 +1,52 @@
+name: "Terraform Infrastructure Deploy"
+
+on:
+  push:
+    branches:
+      - main
+
+# Permissions minimales requises pour le GITHUB_TOKEN
+permissions:
+  contents: read
+
+jobs:
+  terraform:
+    name: "Terraform Plan & Apply"
+    runs-on: ubuntu-latest
+    
+    # IMPORTANT: Doit correspondre au nom de l'environnement créé dans GitHub
+    # C'est ce qui permet d'accéder aux 'Environment secrets' et 'variables' de ta capture.
+    environment: production 
+
+    # Injection des variables d'auth pour que Terraform (provider azurerm) les détecte automatiquement
+    env:
+      ARM_CLIENT_ID: ${{ vars.APP_ID }}             # Mappé sur ton 'APP_ID'
+      ARM_CLIENT_SECRET: ${{ secrets.SC_PASSWORD }} # Mappé sur ton secret 'SC_PASSWORD'
+      ARM_SUBSCRIPTION_ID: ${{ vars.SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ vars.TENANT_ID }}
+      # Note: SC_ID (Service Principal Object ID) est rarement requis pour l'auth pure, 
+      # mais disponible via ${{ vars.SC_ID }} si nécessaire.
+
+    steps:
+      - name: "Checkout Code"
+        uses: actions/checkout@v4
+
+      - name: "Setup Terraform"
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.0
+
+      - name: "Terraform Init"
+        id: init
+        # On passe ici la config partielle du backend si besoin, ou on laisse TF le gérer si tout est dans le code
+        # Si tu utilises un backend Azure Storage, les credentials ci-dessus (ARM_*) seront utilisés pour l'accès.
+        run: terraform init
+
+      - name: "Terraform Plan"
+        id: plan
+        run: terraform plan -out=tfplan
+
+      - name: "Terraform Apply"
+        id: apply
+        # Auto-approve car on est sur la branche main (CD continu)
+        run: terraform apply -auto-approve tfplan
