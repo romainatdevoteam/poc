@@ -16,7 +16,7 @@ jobs:
     
     # IMPORTANT: Doit correspondre au nom de l'environnement créé dans GitHub
     # C'est ce qui permet d'accéder aux 'Environment secrets' et 'variables' de ta capture.
-    environment: production 
+    environment: poc 
 
     # Injection des variables d'auth pour que Terraform (provider azurerm) les détecte automatiquement
     env:
