@@ -29,7 +29,7 @@ module "peering_hub_to_spoke" {
   peering_name              = "peer-hub-to-spoke"
   resource_group_name       = data.azurerm_resource_group.myRG.name
   virtual_network_name      = module.hub_network.vnet_name
-  remote_virtual_network_id = module.hub_network.output.vnet_id
+  remote_virtual_network_id = module.hub_network.vnet_id
 
   allow_virtual_network_access = true
   allow_gateway_transit        = true  # Le Hub partage sa Gateway
@@ -42,7 +42,7 @@ module "peering_spoke_to_hub" {
   peering_name              = "peer-spoke-to-hub"
   resource_group_name       = data.azurerm_resource_group.myRG.name
   virtual_network_name      = module.spoke_network.vnet_name    # Nom du VNet Spoke
-  remote_virtual_network_id = module.spoke_network.output.vnet_id
+  remote_virtual_network_id = module.spoke_network.vnet_id
 
   allow_virtual_network_access = true
   allow_forwarded_traffic      = true  # Si le trafic passe par un Firewall au Hub
