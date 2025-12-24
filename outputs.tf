@@ -5,3 +5,7 @@ output "MyRGOutputID" {
 output "vnet_hub"{
     value = module.hub_network
 }
+
+output "vnet_spoke"{
+    value = module.spoke_network
+}
