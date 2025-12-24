@@ -46,5 +46,5 @@ module "peering_spoke_to_hub" {
 
   allow_virtual_network_access = true
   allow_forwarded_traffic      = true  # Si le trafic passe par un Firewall au Hub
-  use_remote_gateways          = true  # Le Spoke utilise la Gateway du Hub
+  use_remote_gateways          = false  # Le Spoke utilise la Gateway du Hub
 }
