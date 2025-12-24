@@ -24,7 +24,7 @@ module "spoke_network" {
 
 # Hub vers Spoke
 module "peering_hub_to_spoke" {
-  source = "./modules/vnet_peering"
+  source = "./modules/vnet_peerings"
 
   peering_name              = "peer-hub-to-spoke"
   resource_group_name       = data.azurerm_resource_group.myRG.name
@@ -37,7 +37,7 @@ module "peering_hub_to_spoke" {
 
 # Spoke vers Hub
 module "peering_spoke_to_hub" {
-  source = "./modules/vnet_peering"
+  source = "./modules/vnet_peerings"
 
   peering_name              = "peer-spoke-to-hub"
   resource_group_name       = data.azurerm_resource_group.myRG.name
