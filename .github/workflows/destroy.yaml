@@ -1,0 +1,67 @@
+name: "Terraform Infrastructure Destroy"
+
+on:
+  # Déclenchement manuel uniquement (Sécurité)
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Pour confirmer, tapez "DESTROY" en majuscules'
+        required: true
+        default: 'NO'
+
+permissions:
+  contents: read
+
+jobs:
+  terraform-destroy:
+    name: "Terraform Destroy"
+    runs-on: ubuntu-latest
+    
+    # CRITIQUE : Doit être le même environnement que le deploy pour avoir les mêmes vars/secrets
+    environment: poc 
+
+    # On réutilise exactement les mêmes variables d'authentification
+    env:
+      ARM_CLIENT_ID: ${{ vars.APP_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.SC_PASSWORD }}
+      ARM_SUBSCRIPTION_ID: ${{ vars.SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ vars.TENANT_ID }}
+
+    steps:
+      # 1. Vérification de sécurité (fail-safe)
+      - name: "Safety Check"
+        if: ${{ inputs.confirmation != 'DESTROY' }}
+        run: |
+          echo "Error: Vous n'avez pas saisi 'DESTROY'. Abandon de la procédure."
+          exit 1
+
+      - name: "Checkout Code"
+        uses: actions/checkout@v4
+
+      - name: "Azure Login"
+        uses: azure/login@v2
+        with:
+          creds: '{"clientId":"${{ vars.APP_ID }}","clientSecret":"${{ secrets.SC_PASSWORD }}","subscriptionId":"${{ vars.SUBSCRIPTION_ID }}","tenantId":"${{ vars.TENANT_ID }}"}'
+
+      # Note : Si tu as gardé la whitelist dynamique d'IP, il faudrait remettre le bloc ici aussi
+      # (Add Runner IP to Storage Firewall) car le backend doit être accessible pour détruire.
+
+      - name: "Setup Terraform"
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.0
+
+      # 2. Terraform Init : IDENTIQUE au Deploy
+      # C'est ce qui permet à TF de retrouver le fichier .tfstate existant pour savoir quoi détruire.
+      - name: "Terraform Init"
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=${{ vars.BACKEND_RG }}" \
+            -backend-config="storage_account_name=${{ vars.BACKEND_SA_NAME }}" \
+            -backend-config="container_name=${{ vars.BACKEND_CONTAINER_NAME }}" \
+            -backend-config="key=prod.terraform.tfstate"
+
+      # 3. Terraform Destroy
+      # L'option -refresh=true (par défaut) va vérifier l'état réel sur Azure avant de détruire.
+      - name: "Terraform Destroy"
+        run: terraform apply -destroy -auto-approve
