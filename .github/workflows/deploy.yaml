@@ -38,9 +38,18 @@ jobs:
 
       - name: "Terraform Init"
         id: init
-        # On passe ici la config partielle du backend si besoin, ou on laisse TF le gérer si tout est dans le code
-        # Si tu utilises un backend Azure Storage, les credentials ci-dessus (ARM_*) seront utilisés pour l'accès.
-        run: terraform init
+        # L'authentification se fait automatiquement via les variables d'env ARM_* globales.
+        # La configuration (noms des ressources) est injectée ici via les drapeaux CLI.
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=${{ vars.BACKEND_RG }}" \
+            -backend-config="storage_account_name=${{ vars.BACKEND_SA_NAME }}" \
+            -backend-config="container_name=${{ vars.BACKEND_CONTAINER_NAME }}" \
+            -backend-config="key=prod.terraform.tfstate"
+
+      - name: "Terraform Validate"
+        id: validate
+        run: terraform validate
 
       - name: "Terraform Plan"
         id: plan
