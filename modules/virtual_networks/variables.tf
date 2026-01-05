@@ -16,7 +16,7 @@ variable "location" {
 variable "address_space" {
   description = "La liste des espaces d'adressage (CIDR) du VNet"
   type        = list(string)
-  default     = ["10.0.0.0/16"] # Valeur par défaut si non spécifiée
+  default     = ["10.0.0.0/8"] # Valeur par défaut si non spécifiée
 }
 
 variable "tags" {

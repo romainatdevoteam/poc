@@ -43,7 +43,7 @@ jobs:
         run: |
           terraform init \
             -backend-config="resource_group_name=${{ vars.BACKEND_RG }}" \
-            -backend-config="storage_account_name=${{ vars.BACKEND_SA_NAME }}" \
+            -backend-config="storage_account_name=${{ vars.BACKEND_ST_NAME_DEV }}" \
             -backend-config="container_name=${{ vars.BACKEND_CONTAINER_NAME }}" \
             -backend-config="key=prod.terraform.tfstate"
 
