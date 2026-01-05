@@ -7,7 +7,7 @@ spoke_address_space = ["10.1.0.0/8"]
 runner_delegation = {
   name = "aci-delegation-rule"
   service_delegation = {
-    name    = "Microsoft.ContainerInstance/"
+    name    = "Microsoft.ContainerInstance/containerGroups"
     actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
   }
 }
