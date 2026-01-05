@@ -7,5 +7,5 @@ output "vnet_hub" {
 }
 
 output "vnet_spoke_dev" {
-  value = module.spoke_network
+  value = module.spoke_dev_network
 }

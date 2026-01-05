@@ -6,10 +6,10 @@ resource "azurerm_subnet" "subnet" {
 
   # Bloc dynamique : Génère autant de blocs 'delegation' que d'éléments dans la liste
   dynamic "delegation" {
-    for_each = var.delegations
+    # Astuce : On crée une liste temporaire d'un seul élément si var.delegation existe
+    for_each = var.delegation != null ? [var.delegation] : []
     content {
       name = delegation.value.name
-
       service_delegation {
         name    = delegation.value.service_delegation.name
         actions = delegation.value.service_delegation.actions

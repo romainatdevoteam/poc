@@ -20,8 +20,9 @@ variable "spoke_address_space" {
 
 # root/variables.tf
 
-variable "runner_subnet_delegation" {
-  description = "Configuration de la délégation pour le subnet du runner (passé au module subnets)"
+variable "runner_delegation" {
+  description = "Configuration de la délégation (Optionnel). Unique par subnet."
+  # Notez le changement ici : object(...) et non list(object)
   type = object({
     name = string
     service_delegation = object({

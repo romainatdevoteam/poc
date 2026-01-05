@@ -3,14 +3,15 @@ variable "resource_group_name" { type = string }
 variable "virtual_network_name" { type = string }
 variable "address_prefixes" { type = list(string) }
 
-variable "delegations" {
-  description = "Liste des délégations de service pour le subnet."
-  type = list(object({
-    name = string # Nom arbitraire de la règle de délégation
+variable "delegation" {
+  description = "Configuration de la délégation (Optionnel). Unique par subnet."
+  # Notez le changement ici : object(...) et non list(object)
+  type = object({
+    name = string
     service_delegation = object({
-      name    = string       # Le nom du service (ex: Microsoft.ContainerInstance/containerGroups)
-      actions = list(string) # Les actions autorisées (souvent standard)
+      name    = string
+      actions = optional(list(string), ["Microsoft.Network/virtualNetworks/subnets/action"])
     })
-  }))
-  default = [] # Par défaut : aucune délégation
+  })
+  default = null
 }
