@@ -31,7 +31,7 @@ resource "azurerm_container_app" "app" {
 
   # ⭐ Secrets définis AVANT le template avec toset() pour convertir
   dynamic "secret" {
-    for_each = local.secure_env_vars
+    for_each = length(local.secure_env_vars) > 0 ? local.secure_env_vars : {}
     content {
       name  = replace(lower(secret.key), "_", "-")
       value = secret.value
@@ -59,7 +59,7 @@ resource "azurerm_container_app" "app" {
 
       # Variables sensibles (secrets) avec toset()
       dynamic "env" {
-        for_each = local.secure_env_vars
+        for_each = length(local.secure_env_vars) > 0 ? local.secure_env_vars : {}
         content {
           name        = env.key
           secret_name = replace(lower(env.key), "_", "-")
