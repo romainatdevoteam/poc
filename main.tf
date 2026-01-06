@@ -82,37 +82,3 @@ module "subnet_runner" {
   # C'est ici que la magie opère : on passe la variable, pas d'objet en dur
   delegation = var.runner_delegation
 }
-
-### ACI ###
-module "github_runner" {
-  depends_on = [ module.subnet_runner,module.runner_identity ]
-  source = "./modules/container_instances"
-
-  name                = "aci-gh-runner-prod"
-  resource_group_name = data.azurerm_resource_group.myRG.name
-  location            = data.azurerm_resource_group.myRG.location
-
-  # Injection Réseau : Le runner va dans le subnet délégué
-  subnet_ids          = [module.subnet_runner.id]
-
-  # Injection Identité : On lie l'identité créée juste au-dessus
-  identity_id         = module.runner_identity.id 
-
-  # Configuration de l'image (Best practice : utiliser une image avec Azure CLI pré-installé)
-  image_name          = "myoung34/github-runner:latest"
-  cpu                 = "1.0"
-  memory              = "2.0"
-
-  environment_variables = {
-    "REPO_URL"            = "https://github.com/votre-orga/votre-repo"
-    "RUNNER_NAME"         = "aci-runner-prod"
-    "EPHEMERAL"           = "0"    # 0 = Persistant (redémarre après un job), 1 = Jetable
-    "DISABLE_AUTO_UPDATE" = "1"    # Important pour la stabilité réseau
-  }
-
-  secure_environment_variables = {
-    # La variable doit être définie dans terraform.tfvars ou via TF_VAR_github_pat_token
-    "ACCESS_TOKEN" = var.github_pat_token 
-  }
-}
-
