@@ -1,11 +1,16 @@
 resource "azurerm_container_app_environment" "env" {
-  name                       = var.environment_name
-  location                   = var.location
-  resource_group_name        = var.resource_group_name
-  infrastructure_subnet_id   = var.subnet_id
+  name                           = var.environment_name
+  location                       = var.location
+  resource_group_name            = var.resource_group_name
+  infrastructure_subnet_id       = var.subnet_id
   internal_load_balancer_enabled = var.internal_load_balancer_enabled
 
   tags = var.tags
+}
+
+# ⭐ Convertir les variables sécurisées en locals pour faciliter l'itération
+locals {
+  secure_env_vars = var.secure_environment_variables != null ? var.secure_environment_variables : {}
 }
 
 resource "azurerm_container_app" "app" {
@@ -19,10 +24,18 @@ resource "azurerm_container_app" "app" {
     identity_ids = [var.identity_id]
   }
 
-  # ⭐ Configuration pour utiliser l'identité managée pour pull depuis ACR
   registry {
     server   = var.acr_login_server
     identity = var.identity_id
+  }
+
+  # ⭐ Secrets définis AVANT le template avec toset() pour convertir
+  dynamic "secret" {
+    for_each = local.secure_env_vars
+    content {
+      name  = replace(lower(secret.key), "_", "-")
+      value = secret.value
+    }
   }
 
   template {
@@ -35,7 +48,7 @@ resource "azurerm_container_app" "app" {
       cpu    = var.cpu
       memory = var.memory
 
-      # Variables d'environnement non sensibles
+      # Variables non sensibles
       dynamic "env" {
         for_each = var.environment_variables
         content {
@@ -44,23 +57,14 @@ resource "azurerm_container_app" "app" {
         }
       }
 
-      # Variables d'environnement sensibles (référencent des secrets)
+      # Variables sensibles (secrets) avec toset()
       dynamic "env" {
-        for_each = var.secure_environment_variables
+        for_each = local.secure_env_vars
         content {
           name        = env.key
           secret_name = replace(lower(env.key), "_", "-")
         }
       }
-    }
-  }
-
-  #Secrets pour les variables sécurisées
-  dynamic "secret" {
-    for_each = var.secure_environment_variables
-    content {
-      name  = replace(lower(secret.key), "_", "-")
-      value = secret.value
     }
   }
 

@@ -76,13 +76,14 @@ variable "max_replicas" {
 
 variable "environment_variables" {
   description = "Variables d'environnement non sensibles"
-  type        = map(string)
+  type        = any
   default     = {}
 }
 
+# ⭐ CHANGEMENT : Utiliser any au lieu de map(string)
 variable "secure_environment_variables" {
   description = "Variables d'environnement sensibles (stockées comme secrets)"
-  type        = map(string)
+  type        = any
   default     = {}
   sensitive   = true
 }
