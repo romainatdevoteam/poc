@@ -11,3 +11,5 @@ runner_delegation = {
     actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
   }
 }
+
+github_repo_url = "https://github.com/romainatdevoteam/poc"

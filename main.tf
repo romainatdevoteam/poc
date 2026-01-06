@@ -82,3 +82,86 @@ module "subnet_runner" {
   # C'est ici que la magie opère : on passe la variable, pas d'objet en dur
   delegation = var.runner_delegation
 }
+
+### ACR ###
+
+module "acr" {
+  source = "./modules/acr"
+  
+  depends_on = [module.runner_identity]
+
+  name                = "acrghrunnerprod"
+  resource_group_name = data.azurerm_resource_group.myRG.name
+  location            = data.azurerm_resource_group.myRG.location
+  
+  sku                              = "Standard"
+  admin_enabled                    = false
+  public_network_access_enabled    = true
+
+  tags = {
+    Environment = "Dev"
+    Role        = "Container Registry"
+    Project     = "GitHub Runner"
+  }
+}
+
+### ROLE ASSIGNMENTS - ACR ###
+
+# Permet au runner de pull les images depuis l'ACR
+module "runner_acr_pull_role" {
+  source = "./modules/role_assignment"
+  
+  depends_on = [module.acr, module.runner_identity]
+
+  scope                = module.acr.id
+  role_definition_name = "AcrPull"
+  principal_id         = module.runner_identity.principal_id
+}
+
+# (Optionnel) Permet au runner de push des images dans l'ACR
+# Décommenter si tu veux que le runner puisse builder et pusher des images
+module "runner_acr_push_role" {
+  source = "./modules/role_assignment"
+  
+  depends_on = [module.acr, module.runner_identity]
+
+  scope                = module.acr.id
+  role_definition_name = "AcrPush"
+  principal_id         = module.runner_identity.principal_id
+}
+
+### ACI - GITHUB RUNNER ###
+
+# module "github_runner" {
+#   source = "./modules/container_instances"
+  
+#   depends_on = [
+#     module.subnet_runner,
+#     module.runner_identity,
+#     module.acr,
+#     module.runner_acr_pull_role  # Important : attendre que le role soit assigné
+#   ]
+
+#   name                = "aci-gh-runner-prod"
+#   resource_group_name = data.azurerm_resource_group.myRG.name
+#   location            = data.azurerm_resource_group.myRG.location
+
+#   subnet_ids  = [module.subnet_runner.id]
+#   identity_id = module.runner_identity.id
+
+#   # Image depuis ton ACR
+#   image_name = "${module.acr.login_server}/github-runner:latest"
+#   cpu        = "1.0"
+#   memory     = "2.0"
+
+#   environment_variables = {
+#     "REPO_URL"            = var.github_repo_url
+#     "RUNNER_NAME"         = "aci-runner-prod"
+#     "EPHEMERAL"           = "0"
+#     "DISABLE_AUTO_UPDATE" = "1"
+#   }
+
+#   secure_environment_variables = {
+#     "ACCESS_TOKEN" = var.github_pat_token
+#   }
+# } 
