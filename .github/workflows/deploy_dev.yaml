@@ -53,9 +53,9 @@ jobs:
 
       - name: "Terraform Plan"
         id: plan
-        run: terraform plan -var=${{ secrets.PAT }} -out=tfplan
+        run: terraform plan -var="github_pat_token=${{ secrets.PAT }}" -out=tfplan
 
       - name: "Terraform Apply"
         id: apply
         # Auto-approve car on est sur la branche main (CD continu)
-        run: terraform apply -auto-approve tfplan
+        run: terraform apply -var="github_pat_token=${{ secrets.PAT }}" -auto-approve tfplan

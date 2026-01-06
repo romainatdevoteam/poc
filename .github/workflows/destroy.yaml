@@ -64,4 +64,4 @@ jobs:
       # 3. Terraform Destroy
       # L'option -refresh=true (par défaut) va vérifier l'état réel sur Azure avant de détruire.
       - name: "Terraform Destroy"
-        run: terraform apply -destroy -auto-approve
+        run: terraform apply -var="github_pat_token=${{ secrets.PAT }}" -destroy -auto-approve
