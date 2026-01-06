@@ -57,10 +57,13 @@ resource "azurerm_container_app" "app" {
 
       # Variables sensibles référençant les secrets
       dynamic "env" {
-        for_each = var.secure_environment_variables
+        for_each = [for key, value in var.secure_environment_variables : {
+          name        = key
+          secret_name = replace(lower(key), "_", "-")
+        }]
         content {
-          name        = env.key
-          secret_name = replace(lower(env.key), "_", "-")
+          name        = env.value.name
+          secret_name = env.value.secret_name
         }
       }
     }
