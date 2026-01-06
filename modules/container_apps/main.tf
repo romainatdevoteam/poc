@@ -8,11 +8,6 @@ resource "azurerm_container_app_environment" "env" {
   tags = var.tags
 }
 
-# ⭐ Convertir les variables sécurisées en locals
-locals {
-  secure_env_vars = var.secure_environment_variables
-}
-
 resource "azurerm_container_app" "app" {
   name                         = var.name
   container_app_environment_id = azurerm_container_app_environment.env.id
@@ -29,12 +24,15 @@ resource "azurerm_container_app" "app" {
     identity = var.identity_id
   }
 
-  # ⭐ Secrets définis AVANT le template
+  # ⭐ Secrets définis STATIQUEMENT (pas de dynamic!)
   dynamic "secret" {
-    for_each = var.secure_environment_variables
+    for_each = [for key, value in var.secure_environment_variables : {
+      name  = replace(lower(key), "_", "-")
+      value = value
+    }]
     content {
-      name  = replace(lower(secret.key), "_", "-")
-      value = secret.value
+      name  = secret.value.name
+      value = secret.value.value
     }
   }
 
@@ -57,7 +55,7 @@ resource "azurerm_container_app" "app" {
         }
       }
 
-      # Variables sensibles (secrets)
+      # Variables sensibles référençant les secrets
       dynamic "env" {
         for_each = var.secure_environment_variables
         content {
