@@ -80,10 +80,9 @@ variable "environment_variables" {
   default     = {}
 }
 
-# ⭐ CHANGEMENT : Utiliser any au lieu de map(string)
 variable "secure_environment_variables" {
   description = "Variables d'environnement sensibles (stockées comme secrets)"
-  type        = any
+  type        = map(string)
   default     = {}
   sensitive   = true
 }
