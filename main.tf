@@ -109,7 +109,7 @@ module "acr" {
 
 # Permet au runner de pull les images depuis l'ACR
 module "runner_acr_pull_role" {
-  source = "./modules/role_assignment"
+  source = "./modules/role_assignments"
   
   depends_on = [module.acr, module.runner_identity]
 
@@ -121,7 +121,7 @@ module "runner_acr_pull_role" {
 # (Optionnel) Permet au runner de push des images dans l'ACR
 # Décommenter si tu veux que le runner puisse builder et pusher des images
 module "runner_acr_push_role" {
-  source = "./modules/role_assignment"
+  source = "./modules/role_assignments"
   
   depends_on = [module.acr, module.runner_identity]
 
