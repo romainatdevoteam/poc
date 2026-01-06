@@ -129,3 +129,56 @@ module "runner_acr_push_role" {
   principal_id         = module.runner_identity.principal_id
 }
 
+### GITHUB RUNNER - CONTAINER APP ###
+
+module "github_runner" {
+  source = "./modules/container_apps"
+  
+  depends_on = [
+    module.subnet_container_apps,
+    module.runner_identity,
+    module.acr,
+    module.runner_acr_pull_role
+  ]
+
+  name                = "ca-gh-runner-prod"
+  environment_name    = "cae-runners-prod"
+  resource_group_name = data.azurerm_resource_group.myRG.name
+  location            = data.azurerm_resource_group.myRG.location
+
+  # Réseau
+  subnet_id                       = module.subnet_container_apps.id
+  internal_load_balancer_enabled  = true
+
+  # Identité et ACR
+  identity_id       = module.runner_identity.id
+  acr_login_server  = module.acr.login_server
+
+  # Image
+  container_name = "github-runner"
+  image          = "${module.acr.login_server}/github-runner:latest"
+  cpu            = 2.0
+  memory         = "4Gi"
+
+  # Scaling (1 runner permanent pour commencer)
+  min_replicas = 1
+  max_replicas = 1
+
+  # Variables d'environnement
+  environment_variables = {
+    "REPO_URL"            = var.github_repo_url
+    "RUNNER_NAME"         = "aca-runner-prod"
+    "EPHEMERAL"           = "0"
+    "DISABLE_AUTO_UPDATE" = "1"
+  }
+
+  secure_environment_variables = {
+    "ACCESS_TOKEN" = var.github_pat_token
+  }
+
+  tags = {
+    Environment = "Dev"
+    Role        = "CI/CD"
+    Project     = "GitHub Runner"
+  }
+}
