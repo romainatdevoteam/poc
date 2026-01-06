@@ -132,36 +132,45 @@ module "runner_acr_push_role" {
 
 ### ACI - GITHUB RUNNER ###
 
-# module "github_runner" {
-#   source = "./modules/container_instances"
+module "github_runner" {
+  source = "./modules/container_instances"
   
-#   depends_on = [
-#     module.subnet_runner,
-#     module.runner_identity,
-#     module.acr,
-#     module.runner_acr_pull_role  # Important : attendre que le role soit assigné
-#   ]
+  depends_on = [
+    module.subnet_runner,
+    module.runner_identity,
+    module.acr,
+    module.runner_acr_pull_role # CRUCIAL : On attend que le droit soit posé
+  ]
 
-#   name                = "aci-gh-runner-prod"
-#   resource_group_name = data.azurerm_resource_group.myRG.name
-#   location            = data.azurerm_resource_group.myRG.location
+  name                = "aci-gh-runner-prod"
+  resource_group_name = data.azurerm_resource_group.myRG.name
+  location            = data.azurerm_resource_group.myRG.location
 
-#   subnet_ids  = [module.subnet_runner.id]
-#   identity_id = module.runner_identity.id
+  # ATTENTION : Si vous n'avez pas de NAT Gateway sur le Hub,
+  # commentez cette ligne pour tester avec une IP Publique temporaire.
+  #subnet_ids  = [module.subnet_runner.id]
+  
+  # On utilise l'identité créée plus haut
+  identity_id = module.runner_identity.id
 
-#   # Image depuis ton ACR
-#   image_name = "${module.acr.login_server}/github-runner:latest"
-#   cpu        = "1.0"
-#   memory     = "2.0"
+  # Image
+  image_name = "${module.acr.login_server}/github-runner:latest"
+  
+  # Ressources (2 vCPU / 4GB est plus confortable pour des builds CI/CD)
+  cpu    = "2.0"
+  memory = "4.0"
 
-#   environment_variables = {
-#     "REPO_URL"            = var.github_repo_url
-#     "RUNNER_NAME"         = "aci-runner-prod"
-#     "EPHEMERAL"           = "0"
-#     "DISABLE_AUTO_UPDATE" = "1"
-#   }
+  environment_variables = {
+    "REPO_URL"            = var.github_repo_url
+    "RUNNER_NAME"         = "aci-runner-prod"
+    "EPHEMERAL"           = "0"
+    "DISABLE_AUTO_UPDATE" = "1"
+    # Astuce : Si subnet_ids est activé, on force souvent le DNS Google 
+    # au cas où le DNS Azure interne ne résout pas vite github.com
+    "RUNNER_DNS"          = "8.8.8.8" 
+  }
 
-#   secure_environment_variables = {
-#     "ACCESS_TOKEN" = var.github_pat_token
-#   }
-# } 
+  secure_environment_variables = {
+    "ACCESS_TOKEN" = var.github_pat_token
+  }
+}
