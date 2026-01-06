@@ -33,8 +33,8 @@ variable "runner_delegation" {
   default = null
 }
 
-variable "github_pat_token"{
-  type = string
+variable "github_pat_token" {
+  type      = string
   sensitive = true
 }
 

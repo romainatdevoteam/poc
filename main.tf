@@ -2,8 +2,8 @@ data "azurerm_resource_group" "myRG" {
   name = "RG-Romain-Rodrigues"
 }
 data "azurerm_storage_account" "dev_tfstate" {
-  name                = "stdevtfstate136874687"       # NOM DE VOTRE ST DU BACKEND
-  resource_group_name = data.azurerm_resource_group.myRG.name   # RG DE VOTRE BACKEND
+  name                = "stdevtfstate136874687"               # NOM DE VOTRE ST DU BACKEND
+  resource_group_name = data.azurerm_resource_group.myRG.name # RG DE VOTRE BACKEND
 }
 
 ### IDENTITY ###
@@ -14,7 +14,7 @@ module "runner_identity" {
   name                = "id-gh-runner-prod"
   resource_group_name = data.azurerm_resource_group.myRG.name
   location            = data.azurerm_resource_group.myRG.location
-  
+
   tags = {
     Environment = "Dev"
     Role        = "CI/CD"
@@ -70,33 +70,33 @@ module "peering_spoke_dev_to_hub" {
   use_remote_gateways          = false # Le Spoke utilise la Gateway du Hub
 }
 
-# Subnet Runner Github
-module "subnet_runner" {
+# Subnet Container Apps
+module "subnet_container_apps" {
   source = "./modules/subnets"
 
-  subnet_name          = "snet-runners-001"
+  subnet_name          = "snet-container-apps-001"
   resource_group_name  = data.azurerm_resource_group.myRG.name
   virtual_network_name = module.hub_network.vnet_name
-  address_prefixes     = ["10.0.1.0/24"]
+  address_prefixes     = ["10.0.2.0/23"] # Minimum /23 requis pour Container Apps
 
-  # C'est ici que la magie opère : on passe la variable, pas d'objet en dur
-  delegation = var.runner_delegation
+  # Pas de délégation nécessaire pour Container Apps
+  delegation = null
 }
 
 ### ACR ###
 
 module "acr" {
   source = "./modules/acr"
-  
+
   depends_on = [module.runner_identity]
 
   name                = "acrghrunnerprod"
   resource_group_name = data.azurerm_resource_group.myRG.name
   location            = data.azurerm_resource_group.myRG.location
-  
-  sku                              = "Standard"
-  admin_enabled                    = false
-  public_network_access_enabled    = true
+
+  sku                           = "Standard"
+  admin_enabled                 = false
+  public_network_access_enabled = true
 
   tags = {
     Environment = "Dev"
@@ -110,7 +110,7 @@ module "acr" {
 # Permet au runner de pull les images depuis l'ACR
 module "runner_acr_pull_role" {
   source = "./modules/role_assignments"
-  
+
   depends_on = [module.acr, module.runner_identity]
 
   scope                = module.acr.id
@@ -119,10 +119,9 @@ module "runner_acr_pull_role" {
 }
 
 # (Optionnel) Permet au runner de push des images dans l'ACR
-# Décommenter si tu veux que le runner puisse builder et pusher des images
 module "runner_acr_push_role" {
   source = "./modules/role_assignments"
-  
+
   depends_on = [module.acr, module.runner_identity]
 
   scope                = module.acr.id
@@ -130,47 +129,3 @@ module "runner_acr_push_role" {
   principal_id         = module.runner_identity.principal_id
 }
 
-### ACI - GITHUB RUNNER ###
-
-module "github_runner" {
-  source = "./modules/container_instances"
-  
-  depends_on = [
-    module.subnet_runner,
-    module.runner_identity,
-    module.acr,
-    module.runner_acr_pull_role # CRUCIAL : On attend que le droit soit posé
-  ]
-
-  name                = "aci-gh-runner-prod"
-  resource_group_name = data.azurerm_resource_group.myRG.name
-  location            = data.azurerm_resource_group.myRG.location
-
-  # ATTENTION : Si vous n'avez pas de NAT Gateway sur le Hub,
-  # commentez cette ligne pour tester avec une IP Publique temporaire.
-  #subnet_ids  = [module.subnet_runner.id]
-  
-  # On utilise l'identité créée plus haut
-  identity_id = module.runner_identity.id
-
-  # Image
-  image_name = "${module.acr.login_server}/github-runner:latest"
-  
-  # Ressources (2 vCPU / 4GB est plus confortable pour des builds CI/CD)
-  cpu    = "2.0"
-  memory = "4.0"
-
-  environment_variables = {
-    "REPO_URL"            = var.github_repo_url
-    "RUNNER_NAME"         = "aci-runner-prod"
-    "EPHEMERAL"           = "0"
-    "DISABLE_AUTO_UPDATE" = "1"
-    # Astuce : Si subnet_ids est activé, on force souvent le DNS Google 
-    # au cas où le DNS Azure interne ne résout pas vite github.com
-    "RUNNER_DNS"          = "8.8.8.8" 
-  }
-
-  secure_environment_variables = {
-    "ACCESS_TOKEN" = var.github_pat_token
-  }
-}
