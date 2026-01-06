@@ -22,7 +22,7 @@ resource "azurerm_container_app" "app" {
   # ⭐ Configuration pour utiliser l'identité managée pour pull depuis ACR
   registry {
     server   = var.acr_login_server
-    identity = var.identity_id  # Utilise l'identité managée pour s'authentifier
+    identity = var.identity_id
   }
 
   template {
@@ -35,7 +35,7 @@ resource "azurerm_container_app" "app" {
       cpu    = var.cpu
       memory = var.memory
 
-      # Variables d'environnement
+      # Variables d'environnement non sensibles
       dynamic "env" {
         for_each = var.environment_variables
         content {
@@ -44,7 +44,7 @@ resource "azurerm_container_app" "app" {
         }
       }
 
-      # Variables sécurisées
+      # Variables d'environnement sensibles (référencent des secrets)
       dynamic "env" {
         for_each = var.secure_environment_variables
         content {
@@ -55,7 +55,7 @@ resource "azurerm_container_app" "app" {
     }
   }
 
-  # Secrets pour les variables sécurisées
+  #Secrets pour les variables sécurisées
   dynamic "secret" {
     for_each = var.secure_environment_variables
     content {
