@@ -129,11 +129,13 @@ module "runner_acr_push_role" {
   principal_id         = module.runner_identity.principal_id
 }
 
-### GITHUB RUNNER - CONTAINER APP ###
-
-module "github_runner" {
+module "container_apps_factory" {
   source = "./modules/container_apps"
 
+  # C'est cette ligne qui transforme le module en boucle
+  for_each = var.applications_list
+
+  # GESTION DES DÉPENDANCES (Reste identique)
   depends_on = [
     module.subnet_container_apps,
     module.runner_identity,
@@ -141,45 +143,53 @@ module "github_runner" {
     module.runner_acr_pull_role
   ]
 
-  name                = "ca-gh-runner-prod"
+  # 1. NOMMAGE DYNAMIQUE
+  # each.key = le nom que tu donnes dans le tfvars (ex: "gh-runner-prod")
+  name                = "ca-${each.key}"
   environment_name    = "cae-runners-prod"
   resource_group_name = data.azurerm_resource_group.myRG.name
   location            = data.azurerm_resource_group.myRG.location
 
-  # Réseau
+  # 2. CONFIGURATION COMMUNE (Infrastructure partagée)
   subnet_id                      = module.subnet_container_apps.id
   internal_load_balancer_enabled = true
+  identity_id                    = module.runner_identity.id
+  acr_login_server               = module.acr.login_server
 
-  # Identité et ACR
-  identity_id      = module.runner_identity.id
-  acr_login_server = module.acr.login_server
+  # 3. CONFIGURATION SPÉCIFIQUE (Vient de each.value)
+  container_name = "${each.key}-container"
 
-  # Image
-  container_name = "${var.image_deployment}-deployment"
-  image          = "${module.acr.login_server}/${var.image_deployment}:${var.image_deployment_version}"
-  cpu            = 2.0
-  memory         = "4Gi"
+  # Construction de l'URL complète de l'image
+  image = "${module.acr.login_server}/${each.value.image_name}:${each.value.image_tag}"
 
-  # Scaling (1 runner permanent pour commencer)
-  min_replicas = 1
-  max_replicas = 1
+  cpu          = each.value.cpu
+  memory       = each.value.memory
+  min_replicas = each.value.min_replicas
+  max_replicas = each.value.max_replicas
 
-  # Variables d'environnement
-  environment_variables = {
-    "REPO_URL"            = var.github_repo_url
-    "RUNNER_NAME"         = "aca-runner-prod"
-    "RUNNER_LABELS"       = "self-hosted,linux,azure,production" # Ajoutez ceci
-    "EPHEMERAL"           = "0"
-    "DISABLE_AUTO_UPDATE" = "1"
-  }
+  # 4. GESTION DES VARIABLES D'ENVIRONNEMENT
+  # On fusionne ("merge") les variables globales (communes à tous) 
+  # avec les variables spécifiques définies dans le tfvars.
+  environment_variables = merge(
+    {
+      "Global_Env"          = "Production"
+      "DISABLE_AUTO_UPDATE" = "1"
+    },
+    each.value.env_vars # Injection des vars spécifiques
+  )
 
-  secret_environment_variables = {
-    "ACCESS_TOKEN" = var.github_pat_token
-  }
+  # 5. GESTION DES SECRETS
+  # Pareil, on peut avoir des secrets communs (ex: PAT) et des spécifiques
+  secret_environment_variables = merge(
+    {
+      "GITHUB_PAT" = var.github_pat_token # Secret commun (si applicable)
+    },
+    each.value.secrets
+  )
 
   tags = {
     Environment = "Dev"
-    Role        = "CI/CD"
-    Project     = "GitHub Runner"
+    App         = each.key
+    ManagedBy   = "Terraform"
   }
 }

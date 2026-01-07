@@ -49,3 +49,18 @@ variable "image_deployment" {
 variable "image_deployment_version" {
   type = string
 }
+
+variable "applications_list" {
+  description = "Catalogue des applications à déployer (Map d'objets)"
+  # La clé de la map sera le nom unique de l'application (ex: "runner-prod", "api-backend")
+  type = map(object({
+    image_name   = string # Nom de l'image dans l'ACR
+    image_tag    = string # Tag (v1, latest...)
+    cpu          = number # Ex: 0.5 ou 2.0
+    memory       = string # Ex: "1Gi" ou "4Gi"
+    min_replicas = number
+    max_replicas = number
+    env_vars     = optional(map(string), {}) # Variables spécifiques (facultatif)
+    secrets      = optional(map(string), {}) # Secrets spécifiques (facultatif)
+  }))
+}

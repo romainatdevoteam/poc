@@ -2,19 +2,7 @@ name: "Terraform Infrastructure Deploy"
 
 on:
   workflow_dispatch:
-    inputs:
-      image_name:
-        description: "Nom de l'image Docker"
-        required: true
-        type: string
-        default: "hello-world"
-      
-      image_version:
-        description: "Version/Tag de l'image"
-        required: true
-        type: string
-        default: "latest"
-      
+    inputs:      
       terraform_action:
         description: "Action Terraform à exécuter"
         required: true
@@ -71,15 +59,10 @@ jobs:
         run: |
           terraform plan \
             -var="github_pat_token=${{ secrets.PAT }}" \
-            -var="image_deployment=${{ inputs.image_name }}" \
-            -var="image_deployment_version=${{ inputs.image_version }}" \
             -out=tfplan
-          
-          echo "📦 Image: ${{ inputs.image_name }}:${{ inputs.image_version }}"
 
       - name: "Terraform Apply"
         id: apply
         if: inputs.terraform_action == 'apply'
         run: |
-          echo "🚀 Déploiement de ${{ inputs.image_name }}:${{ inputs.image_version }}"
           terraform apply -auto-approve tfplan
