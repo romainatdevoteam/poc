@@ -41,11 +41,11 @@ resource "azurerm_container_app" "app" {
           value = env.value
         }
       }
-      dynamic "secure_env" {
+      dynamic "env" {
         for_each = var.secret_environment_variables != null ? var.secret_environment_variables : {}
         content {
-          name  = secure_env.key
-          value = secure_env.value
+          name        = env.key
+          secret_name = env.key
         }
       }
     }
