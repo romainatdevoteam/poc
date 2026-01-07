@@ -23,12 +23,12 @@ resource "azurerm_container_app" "app" {
     server   = var.acr_login_server
     identity = var.identity_id
   }
-  
+
   # Déclarer les secrets ici
   dynamic "secret" {
     for_each = var.secret_environment_variables != null ? var.secret_environment_variables : {}
     content {
-      name  = secret.key
+      name  = lower(replace(secret.key, "_", "-"))
       value = secret.value
     }
   }
@@ -54,7 +54,7 @@ resource "azurerm_container_app" "app" {
         for_each = var.secret_environment_variables != null ? var.secret_environment_variables : {}
         content {
           name        = env.key
-          secret_name = env.key
+          secret_name = lower(replace(secret.key, "_", "-"))
         }
       }
     }

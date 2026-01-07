@@ -174,7 +174,7 @@ module "github_runner" {
   }
 
   secret_environment_variables = {
-    "access-token" = var.github_pat_token
+    "ACCESS_TOKEN" = var.github_pat_token
   }
 
   tags = {
