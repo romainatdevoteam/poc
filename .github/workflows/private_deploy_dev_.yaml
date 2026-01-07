@@ -12,7 +12,7 @@ permissions:
 jobs:
   terraform:
     name: "Terraform Plan & Apply"
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted]
     
     # IMPORTANT: Doit correspondre au nom de l'environnement créé dans GitHub
     # C'est ce qui permet d'accéder aux 'Environment secrets' et 'variables' de ta capture.
