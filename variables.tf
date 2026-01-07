@@ -42,14 +42,6 @@ variable "github_repo_url" {
   type = string
 }
 
-variable "image_deployment" {
-  type = string
-}
-
-variable "image_deployment_version" {
-  type = string
-}
-
 variable "applications_list" {
   description = "Catalogue des applications à déployer (Map d'objets)"
   # La clé de la map sera le nom unique de l'application (ex: "runner-prod", "api-backend")
