@@ -24,18 +24,6 @@ resource "azurerm_container_app" "app" {
     identity = var.identity_id
   }
 
-  # ⭐ Secrets définis STATIQUEMENT (pas de dynamic!)
-  dynamic "secret" {
-    for_each = [for key, value in var.secure_environment_variables : {
-      name  = replace(lower(key), "_", "-")
-      value = value
-    }]
-    content {
-      name  = secret.value.name
-      value = secret.value.value
-    }
-  }
-
   template {
     min_replicas = var.min_replicas
     max_replicas = var.max_replicas
@@ -45,27 +33,6 @@ resource "azurerm_container_app" "app" {
       image  = var.image
       cpu    = var.cpu
       memory = var.memory
-
-      # Variables non sensibles
-      dynamic "env" {
-        for_each = var.environment_variables
-        content {
-          name  = env.key
-          value = env.value
-        }
-      }
-
-      # Variables sensibles référençant les secrets
-      dynamic "env" {
-        for_each = [for key, value in var.secure_environment_variables : {
-          name        = key
-          secret_name = replace(lower(key), "_", "-")
-        }]
-        content {
-          name        = env.value.name
-          secret_name = env.value.secret_name
-        }
-      }
     }
   }
 
