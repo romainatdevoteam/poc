@@ -2,8 +2,8 @@ data "azurerm_resource_group" "myRG" {
   name = "RG-Romain-Rodrigues"
 }
 data "azurerm_storage_account" "dev_tfstate" {
-  name                = "stdevtfstate136874687"       # NOM DE VOTRE ST DU BACKEND
-  resource_group_name = data.azurerm_resource_group.myRG.name   # RG DE VOTRE BACKEND
+  name                = "stdevtfstate136874687"               # NOM DE VOTRE ST DU BACKEND
+  resource_group_name = data.azurerm_resource_group.myRG.name # RG DE VOTRE BACKEND
 }
 
 ### IDENTITY ###
@@ -14,7 +14,7 @@ module "runner_identity" {
   name                = "id-gh-runner-prod"
   resource_group_name = data.azurerm_resource_group.myRG.name
   location            = data.azurerm_resource_group.myRG.location
-  
+
   tags = {
     Environment = "Dev"
     Role        = "CI/CD"
@@ -77,7 +77,7 @@ module "subnet_container_apps" {
   subnet_name          = "snet-container-apps-001"
   resource_group_name  = data.azurerm_resource_group.myRG.name
   virtual_network_name = module.hub_network.vnet_name
-  address_prefixes     = ["10.0.50.0/23"]  # Minimum /23 requis pour Container Apps
+  address_prefixes     = ["10.0.50.0/23"] # Minimum /23 requis pour Container Apps
 
   # Pas de délégation nécessaire pour Container Apps
   delegation = null
@@ -87,16 +87,16 @@ module "subnet_container_apps" {
 
 module "acr" {
   source = "./modules/acr"
-  
+
   depends_on = [module.runner_identity]
 
   name                = "acrghrunnerprod"
   resource_group_name = data.azurerm_resource_group.myRG.name
   location            = data.azurerm_resource_group.myRG.location
-  
-  sku                              = "Standard"
-  admin_enabled                    = false
-  public_network_access_enabled    = true
+
+  sku                           = "Standard"
+  admin_enabled                 = false
+  public_network_access_enabled = true
 
   tags = {
     Environment = "Dev"
@@ -110,7 +110,7 @@ module "acr" {
 # Permet au runner de pull les images depuis l'ACR
 module "runner_acr_pull_role" {
   source = "./modules/role_assignments"
-  
+
   depends_on = [module.acr, module.runner_identity]
 
   scope                = module.acr.id
@@ -121,7 +121,7 @@ module "runner_acr_pull_role" {
 # (Optionnel) Permet au runner de push des images dans l'ACR
 module "runner_acr_push_role" {
   source = "./modules/role_assignments"
-  
+
   depends_on = [module.acr, module.runner_identity]
 
   scope                = module.acr.id
@@ -133,7 +133,7 @@ module "runner_acr_push_role" {
 
 module "github_runner" {
   source = "./modules/container_apps"
-  
+
   depends_on = [
     module.subnet_container_apps,
     module.runner_identity,
@@ -147,12 +147,12 @@ module "github_runner" {
   location            = data.azurerm_resource_group.myRG.location
 
   # Réseau
-  subnet_id                       = module.subnet_container_apps.id
-  internal_load_balancer_enabled  = true
+  subnet_id                      = module.subnet_container_apps.id
+  internal_load_balancer_enabled = true
 
   # Identité et ACR
-  identity_id       = module.runner_identity.id
-  acr_login_server  = module.acr.login_server
+  identity_id      = module.runner_identity.id
+  acr_login_server = module.acr.login_server
 
   # Image
   container_name = "github-runner"
@@ -168,7 +168,7 @@ module "github_runner" {
   environment_variables = {
     "REPO_URL"            = var.github_repo_url
     "RUNNER_NAME"         = "aca-runner-prod"
-    "RUNNER_LABELS"       = "self-hosted,linux,azure,production"  # Ajoutez ceci
+    "RUNNER_LABELS"       = "self-hosted,linux,azure,production" # Ajoutez ceci
     "EPHEMERAL"           = "0"
     "DISABLE_AUTO_UPDATE" = "1"
   }

@@ -23,19 +23,19 @@ resource "azurerm_container_app" "app" {
     server   = var.acr_login_server
     identity = var.identity_id
   }
+  
+  # Déclarer les secrets ici
+  dynamic "secret" {
+    for_each = var.secret_environment_variables != null ? var.secret_environment_variables : {}
+    content {
+      name  = secret.key
+      value = secret.value
+    }
+  }
 
   template {
     min_replicas = var.min_replicas
     max_replicas = var.max_replicas
-
-    # Déclarer les secrets ici
-    dynamic "secret" {
-      for_each = var.secret_environment_variables != null ? var.secret_environment_variables : {}
-      content {
-        name  = secret.key
-        value = secret.value
-      }
-    }
 
     container {
       name   = var.container_name
