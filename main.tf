@@ -172,10 +172,10 @@ module "github_runner" {
     "EPHEMERAL"           = "0"
     "DISABLE_AUTO_UPDATE" = "1"
   }
-  
-  # secure_environment_variables = {
-  #   "ACCESS_TOKEN" = var.github_pat_token
-  # }
+
+  secret_environment_variables = {
+    "ACCESS_TOKEN" = var.github_pat_token
+  }
 
   tags = {
     Environment = "Dev"

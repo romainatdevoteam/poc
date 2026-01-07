@@ -80,6 +80,12 @@ variable "environment_variables" {
   default     = {}
 }
 
+variable "secret_environment_variables" {
+  description = "Variables d'environnement sensibles"
+  type        = map(string)
+  default     = {}
+}
+
 variable "tags" {
   description = "Tags à appliquer"
   type        = map(string)
