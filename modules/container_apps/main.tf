@@ -1,13 +1,3 @@
-resource "azurerm_container_app_environment" "env" {
-  name                           = var.environment_name
-  location                       = var.location
-  resource_group_name            = var.resource_group_name
-  infrastructure_subnet_id       = var.subnet_id
-  internal_load_balancer_enabled = var.internal_load_balancer_enabled
-
-  tags = var.tags
-}
-
 resource "azurerm_container_app" "app" {
   name                         = var.name
   container_app_environment_id = azurerm_container_app_environment.env.id
