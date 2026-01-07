@@ -160,8 +160,7 @@ module "github_runner" {
   cpu            = 2.0
   memory         = "4Gi"
 
-  # Scaling (1 runner permanent pour commencer)
-  min_replicas = 1
+  min_replicas = 0
   max_replicas = 1
 
   # Variables d'environnement
