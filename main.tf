@@ -129,6 +129,21 @@ module "runner_acr_push_role" {
   principal_id         = module.runner_identity.principal_id
 }
 
+module "aca_environment" {
+  source = "./modules/container_app_environment"
+
+  environment_name               = "cae-runners-dev"
+  resource_group_name            = data.azurerm_resource_group.myRG.name
+  location                       = data.azurerm_resource_group.myRG.location
+  infrastructure_subnet_id       = module.subnet_container_apps.id
+  internal_load_balancer_enabled = true
+
+  tags = {
+    Environment = "Dev"
+    Role        = "Shared Infrastructure"
+  }
+}
+
 module "container_apps_factory" {
   source = "./modules/container_apps"
 
@@ -146,7 +161,7 @@ module "container_apps_factory" {
   # 1. NOMMAGE DYNAMIQUE
   # each.key = le nom que tu donnes dans le tfvars (ex: "gh-runner-prod")
   name                = "ca-${each.key}"
-  environment_name    = "cae-runners-prod"
+  environment_name    = "cae-runners-dev"
   resource_group_name = data.azurerm_resource_group.myRG.name
   location            = data.azurerm_resource_group.myRG.location
 
@@ -172,7 +187,7 @@ module "container_apps_factory" {
   # avec les variables spécifiques définies dans le tfvars.
   environment_variables = merge(
     {
-      "Global_Env"          = "Production"
+      "Global_Env"          = "Dev"
       "DISABLE_AUTO_UPDATE" = "1"
     },
     each.value.env_vars # Injection des vars spécifiques
