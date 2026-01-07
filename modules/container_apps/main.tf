@@ -1,13 +1,3 @@
-resource "azurerm_container_app_environment" "env" {
-  name                           = var.environment_name
-  location                       = var.location
-  resource_group_name            = var.resource_group_name
-  infrastructure_subnet_id       = var.subnet_id
-  internal_load_balancer_enabled = var.internal_load_balancer_enabled
-
-  tags = var.tags
-}
-
 resource "azurerm_container_app" "app" {
   name                         = var.name
   container_app_environment_id = azurerm_container_app_environment.env.id
@@ -28,12 +18,22 @@ resource "azurerm_container_app" "app" {
     min_replicas = var.min_replicas
     max_replicas = var.max_replicas
 
+    # Déclarer les secrets ici
+    dynamic "secret" {
+      for_each = var.secret_environment_variables != null ? var.secret_environment_variables : {}
+      content {
+        name  = secret.key
+        value = secret.value
+      }
+    }
+
     container {
       name   = var.container_name
       image  = var.image
       cpu    = var.cpu
       memory = var.memory
 
+      # Variables d'environnement classiques
       dynamic "env" {
         for_each = var.environment_variables != null ? var.environment_variables : {}
         content {
@@ -41,11 +41,13 @@ resource "azurerm_container_app" "app" {
           value = env.value
         }
       }
+
+      # Variables d'environnement depuis les secrets
       dynamic "env" {
         for_each = var.secret_environment_variables != null ? var.secret_environment_variables : {}
         content {
           name        = env.key
-          secret_name = env.value
+          secret_name = env.key  # ← ICI: utilisez env.key, pas env.value
         }
       }
     }
