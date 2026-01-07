@@ -54,7 +54,7 @@ resource "azurerm_container_app" "app" {
         for_each = var.secret_environment_variables != null ? var.secret_environment_variables : {}
         content {
           name        = env.key
-          secret_name = lower(replace(secret.key, "_", "-"))
+          secret_name = lower(replace(env.key, "_", "-"))
         }
       }
     }
