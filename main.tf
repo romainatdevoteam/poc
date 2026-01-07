@@ -164,14 +164,15 @@ module "github_runner" {
   min_replicas = 1
   max_replicas = 1
 
-  # # Variables d'environnement
-  # environment_variables = {
-  #   "REPO_URL"            = var.github_repo_url
-  #   "RUNNER_NAME"         = "aca-runner-prod"
-  #   "EPHEMERAL"           = "0"
-  #   "DISABLE_AUTO_UPDATE" = "1"
-  # }
-
+  # Variables d'environnement
+  environment_variables = {
+    "REPO_URL"            = var.github_repo_url
+    "RUNNER_NAME"         = "aca-runner-prod"
+    "RUNNER_LABELS"       = "self-hosted,linux,azure,production"  # Ajoutez ceci
+    "EPHEMERAL"           = "0"
+    "DISABLE_AUTO_UPDATE" = "1"
+  }
+  
   # secure_environment_variables = {
   #   "ACCESS_TOKEN" = var.github_pat_token
   # }
