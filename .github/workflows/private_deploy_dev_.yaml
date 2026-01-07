@@ -1,4 +1,4 @@
-name: "Terraform Infrastructure Deploy"
+name: "Private Terraform Infrastructure Deploy"
 
 on:
   workflow_dispatch:
