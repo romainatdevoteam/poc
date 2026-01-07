@@ -41,3 +41,11 @@ variable "github_pat_token" {
 variable "github_repo_url" {
   type = string
 }
+
+variable "image_deployment" {
+  type = string
+}
+
+variable "image_deployment_version" {
+  type = string
+}

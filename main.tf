@@ -155,8 +155,8 @@ module "github_runner" {
   acr_login_server = module.acr.login_server
 
   # Image
-  container_name = "github-runner"
-  image          = "${module.acr.login_server}/github-runner:latest"
+  container_name = "${var.image_deployment}-deployment"
+  image          = "${module.acr.login_server}/${var.image_deployment}:${var.image_deployment_version}"
   cpu            = 2.0
   memory         = "4Gi"
 

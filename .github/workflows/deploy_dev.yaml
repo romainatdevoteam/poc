@@ -2,30 +2,46 @@ name: "Terraform Infrastructure Deploy"
 
 on:
   workflow_dispatch:
-    branches:
-      - main
+    inputs:
+      image_name:
+        description: "Nom de l'image Docker"
+        required: true
+        type: string
+        default: "hello-world"
+      
+      image_version:
+        description: "Version/Tag de l'image"
+        required: true
+        type: string
+        default: "latest"
+      
+      terraform_action:
+        description: "Action Terraform à exécuter"
+        required: true
+        type: choice
+        default: "plan"
+        options:
+          - plan
+          - apply
 
-# Permissions minimales requises pour le GITHUB_TOKEN
 permissions:
   contents: read
 
 jobs:
   terraform:
-    name: "Terraform Plan & Apply"
+    name: "Terraform ${{ inputs.terraform_action }}"
     runs-on: ubuntu-latest
     
-    # IMPORTANT: Doit correspondre au nom de l'environnement créé dans GitHub
-    # C'est ce qui permet d'accéder aux 'Environment secrets' et 'variables' de ta capture.
     environment: poc 
 
-    # Injection des variables d'auth pour que Terraform (provider azurerm) les détecte automatiquement
     env:
-      ARM_CLIENT_ID: ${{ vars.APP_ID }}             # Mappé sur ton 'APP_ID'
-      ARM_CLIENT_SECRET: ${{ secrets.SC_PASSWORD }} # Mappé sur ton secret 'SC_PASSWORD'
+      ARM_CLIENT_ID: ${{ vars.APP_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.SC_PASSWORD }}
       ARM_SUBSCRIPTION_ID: ${{ vars.SUBSCRIPTION_ID }}
       ARM_TENANT_ID: ${{ vars.TENANT_ID }}
-      # Note: SC_ID (Service Principal Object ID) est rarement requis pour l'auth pure, 
-      # mais disponible via ${{ vars.SC_ID }} si nécessaire.
+      # Variables d'image disponibles pour toutes les steps
+      TF_VAR_container_image_name: ${{ inputs.image_name }}
+      TF_VAR_container_image_version: ${{ inputs.image_version }}
 
     steps:
       - name: "Checkout Code"
@@ -38,8 +54,6 @@ jobs:
 
       - name: "Terraform Init"
         id: init
-        # L'authentification se fait automatiquement via les variables d'env ARM_* globales.
-        # La configuration (noms des ressources) est injectée ici via les drapeaux CLI.
         run: |
           terraform init \
             -backend-config="resource_group_name=${{ vars.BACKEND_RG }}" \
@@ -53,9 +67,19 @@ jobs:
 
       - name: "Terraform Plan"
         id: plan
-        run: terraform plan -var="github_pat_token=${{ secrets.PAT }}" -out=tfplan
+        if: inputs.terraform_action == 'plan' || inputs.terraform_action == 'apply'
+        run: |
+          terraform plan \
+            -var="github_pat_token=${{ secrets.PAT }}" \
+            -var="image_deployment=${{ inputs.image_name }}" \
+            -var="image_deployment_version=${{ inputs.image_version }}" \
+            -out=tfplan
+          
+          echo "📦 Image: ${{ inputs.image_name }}:${{ inputs.image_version }}"
 
       - name: "Terraform Apply"
         id: apply
-        # Auto-approve car on est sur la branche main (CD continu)
-        run: terraform apply -auto-approve tfplan
+        if: inputs.terraform_action == 'apply'
+        run: |
+          echo "🚀 Déploiement de ${{ inputs.image_name }}:${{ inputs.image_version }}"
+          terraform apply -auto-approve tfplan
