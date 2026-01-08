@@ -1,16 +1,9 @@
 name: "Terraform Infrastructure Deploy"
 
 on:
-  workflow_dispatch:
-    inputs:      
-      terraform_action:
-        description: "Action Terraform à exécuter"
-        required: true
-        type: choice
-        default: "plan"
-        options:
-          - plan
-          - apply
+  push:
+    branches:
+      - main
 
 permissions:
   contents: read
