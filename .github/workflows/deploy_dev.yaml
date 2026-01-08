@@ -1,9 +1,9 @@
-name: "Terraform Infrastructure Deploy"
+name: "Hub & Spoke Infra"
 
 on:
   push:
     branches:
-      - main
+      - feature/hub-spoke
 
 permissions:
   contents: read
@@ -49,11 +49,4 @@ jobs:
       - name: "Terraform Plan"
         id: plan
         run: |
-          terraform plan \
-            -var="github_pat_token=${{ secrets.PAT }}" \
-            -out=tfplan
-
-      - name: "Terraform Apply"
-        id: apply
-        run: |
-          terraform apply -auto-approve tfplan
+          terraform plan -out=tfplan
