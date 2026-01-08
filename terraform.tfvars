@@ -18,7 +18,7 @@ applications_list = {
 
   # APP 1 : Une petite API interne (Petit CPU, Scale to Zero)
   "hello-world" = {
-    image_name   = "hello-world" # Doit exister dans l'ACR
+    image_name   = "demo-web-app" # Doit exister dans l'ACR
     image_tag    = "latest"
     cpu          = 0.25
     memory       = "0.5Gi"
