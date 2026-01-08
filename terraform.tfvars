@@ -17,7 +17,7 @@ github_repo_url = "https://github.com/romainatdevoteam/poc"
 applications_list = {
 
   # APP 1 : Une petite API interne (Petit CPU, Scale to Zero)
-  "mon-api-interne" = {
+  "hello-world" = {
     image_name   = "hello-world" # Doit exister dans l'ACR
     image_tag    = "latest"
     cpu          = 0.25
