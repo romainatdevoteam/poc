@@ -3,3 +3,35 @@ hub_address_space = ["10.0.0.0/16"]
 
 spoke_vnet_name_dev = "vnet_dev"
 spoke_address_space = ["10.1.0.0/16"]
+
+runner_delegation = {
+  name = "aci-delegation-rule"
+  service_delegation = {
+    name    = "Microsoft.ContainerInstance/containerGroups"
+    actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
+  }
+}
+
+github_repo_url = "https://github.com/romainatdevoteam/poc"
+
+# applications_list = {
+
+#   # APP 1 : Une petite API interne (Petit CPU, Scale to Zero)
+#   "hello-world" = {
+#     image_name   = "demo-web-app" # Doit exister dans l'ACR
+#     image_tag    = "latest"
+#     cpu          = 0.25
+#     memory       = "0.5Gi"
+#     min_replicas = 1
+#     max_replicas = 4
+
+#     env_vars = {
+#       "LOG_LEVEL" = "DEBUG"
+#       "Version"   = "3.0.0"
+#     }
+
+#     secrets = {
+#       "DB_PASSWORD" = "super-secret-password"
+#     }
+#   }
+# }
