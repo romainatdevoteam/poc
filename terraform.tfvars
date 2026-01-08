@@ -27,6 +27,7 @@ applications_list = {
 
     env_vars = {
       "LOG_LEVEL" = "DEBUG"
+      "Version"   = "2.0.0"
     }
 
     secrets = {
