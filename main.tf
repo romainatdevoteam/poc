@@ -136,7 +136,7 @@ module "aca_environment" {
   resource_group_name            = data.azurerm_resource_group.myRG.name
   location                       = data.azurerm_resource_group.myRG.location
   infrastructure_subnet_id       = module.subnet_container_apps.id
-  internal_load_balancer_enabled = true
+  internal_load_balancer_enabled = false
 
   tags = {
     Environment = "Dev"
