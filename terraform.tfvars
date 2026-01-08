@@ -20,8 +20,8 @@ applications_list = {
   "gh-runner-prod" = {
     image_name   = "github-runner"
     image_tag    = "latest"
-    cpu          = 2.0
-    memory       = "4Gi"
+    cpu          = 0.25
+    memory       = "0.5Gi"
     min_replicas = 1
     max_replicas = 1
 
@@ -35,8 +35,8 @@ applications_list = {
   "mon-api-interne" = {
     image_name   = "hello-world" # Doit exister dans l'ACR
     image_tag    = "latest"
-    cpu          = 1.0
-    memory       = "1Gi"
+    cpu          = 0.25
+    memory       = "0.5Gi"
     min_replicas = 1
     max_replicas = 4
 
