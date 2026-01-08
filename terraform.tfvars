@@ -14,24 +14,24 @@ runner_delegation = {
 
 github_repo_url = "https://github.com/romainatdevoteam/poc"
 
-applications_list = {
+# applications_list = {
 
-  # APP 1 : Une petite API interne (Petit CPU, Scale to Zero)
-  "hello-world" = {
-    image_name   = "demo-web-app" # Doit exister dans l'ACR
-    image_tag    = "latest"
-    cpu          = 0.25
-    memory       = "0.5Gi"
-    min_replicas = 1
-    max_replicas = 4
+#   # APP 1 : Une petite API interne (Petit CPU, Scale to Zero)
+#   "hello-world" = {
+#     image_name   = "demo-web-app" # Doit exister dans l'ACR
+#     image_tag    = "latest"
+#     cpu          = 0.25
+#     memory       = "0.5Gi"
+#     min_replicas = 1
+#     max_replicas = 4
 
-    env_vars = {
-      "LOG_LEVEL" = "DEBUG"
-      "Version"   = "3.0.0"
-    }
+#     env_vars = {
+#       "LOG_LEVEL" = "DEBUG"
+#       "Version"   = "3.0.0"
+#     }
 
-    secrets = {
-      "DB_PASSWORD" = "super-secret-password"
-    }
-  }
-}
+#     secrets = {
+#       "DB_PASSWORD" = "super-secret-password"
+#     }
+#   }
+# }
