@@ -48,7 +48,6 @@ jobs:
 
       - name: "Terraform Plan"
         id: plan
-        if: inputs.terraform_action == 'plan' || inputs.terraform_action == 'apply'
         run: |
           terraform plan \
             -var="github_pat_token=${{ secrets.PAT }}" \
@@ -56,6 +55,5 @@ jobs:
 
       - name: "Terraform Apply"
         id: apply
-        if: inputs.terraform_action == 'apply'
         run: |
           terraform apply -auto-approve tfplan
