@@ -155,7 +155,8 @@ module "container_apps_factory" {
     module.subnet_container_apps,
     module.runner_identity,
     module.acr,
-    module.runner_acr_pull_role
+    module.runner_acr_pull_role,
+    module.aca_environment
   ]
 
   ingress_external_enabled = true
