@@ -164,6 +164,7 @@ module "container_apps_factory" {
   environment_name    = "cae-runners-dev"
   resource_group_name = data.azurerm_resource_group.myRG.name
   location            = data.azurerm_resource_group.myRG.location
+  container_app_environment_id = module.aca_environment.id
 
   # 2. CONFIGURATION COMMUNE (Infrastructure partagée)
   subnet_id                      = module.subnet_container_apps.id
