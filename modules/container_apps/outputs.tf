@@ -10,7 +10,7 @@ output "name" {
 
 output "environment_id" {
   description = "ID de l'environnement Container Apps"
-  value       = azurerm_container_app_environment.env.id
+  value       = azurerm_container_app.app.container_app_environment_id
 }
 
 output "fqdn" {
