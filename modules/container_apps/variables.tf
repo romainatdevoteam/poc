@@ -96,3 +96,16 @@ variable "container_app_environment_id" {
   description = "ID de l'environnement Container Apps"
   type        = string
 }
+
+# Fichier: modules/votre_module/variables.tf
+
+variable "ingress_external_enabled" {
+  description = "L'application doit-elle être accessible publiquement ?"
+  type        = bool
+  default     = true
+}
+
+variable "ingress_target_port" {
+  description = "Le port sur lequel le conteneur écoute (Ex: 80 pour Nginx)"
+  type        = number
+}

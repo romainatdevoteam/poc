@@ -9,6 +9,23 @@ resource "azurerm_container_app" "app" {
     identity_ids = [var.identity_id]
   }
 
+  ingress {
+    # On autorise le trafic depuis internet (variable booléenne)
+    external_enabled = var.ingress_external_enabled
+
+    # CRUCIAL : Le port interne du conteneur (sera 80 pour nginx)
+    target_port      = var.ingress_target_port
+
+    # Laisse Azure gérer le HTTP/HTTPS automatiquement
+    transport        = "auto"
+
+    # Redirige 100% du trafic vers la nouvelle révision
+    traffic_weight {
+      latest_revision = true
+      percentage      = 100
+    }
+  }
+
   registry {
     server   = var.acr_login_server
     identity = var.identity_id

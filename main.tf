@@ -158,6 +158,9 @@ module "container_apps_factory" {
     module.runner_acr_pull_role
   ]
 
+  ingress_external_enabled = true
+  ingress_target_port      = 80  # C'est ICI que se joue la correction
+
   # 1. NOMMAGE DYNAMIQUE
   # each.key = le nom que tu donnes dans le tfvars (ex: "gh-runner-prod")
   name                = "ca-${each.key}"
